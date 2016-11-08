@@ -6,13 +6,16 @@ var mraa = require("mraa");
  * @param {number} data (hex)
  */
 var paddingData = function (ctx, data) {
+    
+    var realIdx = ctx.daisyChainCount - ctx.index - 1;
+    
     var d = new Array();
     var prefixData = new Array();
-    for (var i=0; i<ctx.index; i++) {
+    for (var i=0; i<realIdx; i++) {
         prefixData.push("0x00");
     }
     var suffixData = new Array();
-    for (var i=0; i<ctx.daisyChainCount - ctx.index - 1; i++) {
+    for (var i=0; i<ctx.daisyChainCount - realIdx - 1; i++) {
         suffixData.push("0x00");
     }
 
@@ -187,7 +190,7 @@ L6470.prototype.command = function (com, args) {
 }
 
 L6470.prototype.nop = function() {
-    this.send(convert("0x00", 8));
+    this.send(convert10(0, 8));
 }
 
 /**
@@ -196,6 +199,10 @@ L6470.prototype.nop = function() {
  * @param {number} val Value(decimal).
  */
 L6470.prototype.setParam = function(par, val) {
+    if (val != 0 && !val) {
+        console.log("Invalid value.");
+        return;
+    }
     val = parseInt(val, 10);
     
     if (!this.PARAMS[par]) {
@@ -204,8 +211,8 @@ L6470.prototype.setParam = function(par, val) {
     }
     var addr = this.PARAMS[par].addr;
     var cmd = "000" + ("00000" + parseInt(addr, 16).toString(2)).substr(-5);
-    var d = convert(cmd, 8);
-    [].push.apply(d, convert(val.toString(2), this.PARAMS[par].len));
+    var d = convert2(cmd);
+    [].push.apply(d, convert10(val, this.PARAMS[par].len));
     
     this.send(d);
 }
@@ -222,7 +229,7 @@ L6470.prototype.getParam = function(par) {
     var addr = this.PARAMS[par].addr;
     var data = "001" + ("00000" + parseInt(addr, 16).toString(2)).substr(-5);
     
-    this.send(convert(data, 8));
+    this.send(convert2(data));
 };
 
 L6470.prototype.setup = function(maxSpeed, kvalHold, kvalRun, kvalAcc, kvalDec) {
@@ -250,17 +257,20 @@ L6470.prototype.setup = function(maxSpeed, kvalHold, kvalRun, kvalAcc, kvalDec) 
  */
 L6470.prototype.run = function(dir, spd) {
     spd = parseInt(spd, 10);
-    var d = convert("0101000" + dir, 8);
-    [].push.apply(d, convert(spd.toString(2), 20));
+    var d = convert2("0101000" + dir);
+    [].push.apply(d, convert10(spd.toString(2), 20));
     this.send(d);
 }
 
 L6470.prototype.stepClock = function(dir) {
-    this.send(convert("0101100" + dir));
+    this.send(convert2("0101100" + dir));
 }
 
 L6470.prototype.move = function(dir, nStep) {
-    
+    var d = convert2("0100000" + dir);
+    nStep = parseInt(nStep, 10);
+    [].push.apply(d, convert10(nStep, 8));
+    this.send(d);
 }
 
 /**
@@ -269,8 +279,8 @@ L6470.prototype.move = function(dir, nStep) {
  */
 L6470.prototype.goTo = function(absPos) {
     absPos = parseInt(absPos, 10);
-    var d = convert("01100000", 8);
-    [].push.apply(d, convert(absPos.toString(2), 22));
+    var d = convert2("01100000");
+    [].push.apply(d, convert10(absPos, 22));
     this.send(d);
 }
 
@@ -280,20 +290,22 @@ L6470.prototype.goTo = function(absPos) {
  * @param {number} absPos (decimal)
  */
 L6470.prototype.goToDir = function(dir, absPos) {
-    var d = convert("0101000" + dir, 8);
-    console.log("d: " + d);
+    var d = convert2("0110100" + dir);
     absPos = parseInt(absPos, 10);
-    [].push.apply(d, convert(absPos.toString(2), 22));
-    console.log("d1: " + d);
+    [].push.apply(d, convert10(absPos, 22));
     this.send(d);
 }
 
 L6470.prototype.goUntil = function(act, dir, spd) {
-    
+    var d = convert2("1000" + act + "01" + dir);
+    spd = parseInt(spd, 10);
+    [].push.apply(d, convert10(spd, 20));
+    this.send(d);
 }
 
 L6470.prototype.releaseSW = function(act, dir) {
-    
+    var d = convert2("1001" + act + "01" + dir);
+    this.send(d);
 }
 
 L6470.prototype.goHome = function() {
@@ -321,32 +333,56 @@ L6470.prototype.hardStop = function() {
 }
 
 L6470.prototype.softHiZ = function() {
-    
+    this.send("0xa0");
 }
 
 L6470.prototype.hardHiZ = function() {
-    
+    this.send("0xa8");
 }
 
 L6470.prototype.getStatus = function() {
-    
+    this.send("0xd0");
 }
 
-function getMaxAbsValue(bit, signed) {
-    if (signed) {
-        return (Math.pow(2, bit-1)) - 1;
+/**
+ * Converting data for sending.
+ * @param {number} val (decimal).
+ * @param {number} bitLength Send data length.
+ * @return {Array{string}} Array of the data for sending(hex).
+ */
+function convert10(val, bitLength) {
+    if (!bitLength) {
+        console.log("Invalid bitLength.");
+        return;
+    }
+    if (val < 0) {
+        console.log("val: " + val);
+        var c1 = ~val;
+        var c2 = getMaxAbsValue(bitLength, true) - c1;
+        var c3 = '1' + c2.toString(2);
+        return convert2(c3);
     } else {
-        return (Math.pow(2, bit)) - 1;
+        val = val.toString(2);
+        val = ('00000000000000000000000000000000' + val.toString()).substr(-bitLength);
+        return convert2(val);
+    }
+}
+
+function getMaxAbsValue(bitLength, signed) {
+    if (signed) {
+        return (Math.pow(2, bitLength-1)) - 1;
+    } else {
+        return (Math.pow(2, bitLength)) - 1;
     }
 }
 
 /**
- * Convert bit to hex.
+ * Converting bit to hex.
  *
  * @param {string} bit 
  * @return {Array{string}} Array of the data(hex).
  */
-function getHexParams(bit) {
+function convert2(bit) {
     var params = new Array();
     
     var s = 8 - (bit.length % 8);
@@ -374,31 +410,6 @@ function getHexParams(bit) {
 
     return params;
 }
-
-/**
- * Convert data for sending.
- * @param {string} val Convert value(bit).
- * @param {number} bitLength Send data length.
- * @return {Array{string}} Array of the data for sending(hex).
- */
-function convert(val, bitLength) {
-    if (!bitLength) {
-        console.log("Invalid bitLength.");
-        return;
-    }
-    if (val < 0) {
-        var c1 = ~val;
-        var c2 = getMaxAbsValue(bitLength, true) - c1;
-        var c3 = '1' + c2.toString(2);
-        return getHexParams(c3);
-    } else {
-        val = val.toString(2);
-        val = ('00000000000000000000000000000000' + val.toString()).substr(-bitLength);
-        return getHexParams(val);
-    }
-}
-
-module.exports = L6470;
 
 /**
  * Sending data.
@@ -436,6 +447,10 @@ L6470.prototype.send = function(data) {
 }
 
 L6470.prototype.test = function() {
+    if (this.index != 0) {
+        return;
+    }
+    
     var b = new Buffer(2);
     b[0] = parseInt("0x00", 16);
     b[1] = parseInt("0x00", 16);
@@ -453,6 +468,14 @@ L6470.prototype.test = function() {
     b[0] = parseInt("0xc0", 16);
     b[1] = parseInt("0xc0", 16);
     this.spi.write(b);
+    
+    // max_speed
+//    b[0] = parseInt("0x07", 16);
+//    b[1] = parseInt("0x07", 16);
+//    this.spi.write(b);
+//    b[0] = parseInt("0x30", 16);
+//    b[1] = parseInt("0x30", 16);
+//    this.spi.write(b);
     
     b[0] = parseInt("0x09", 16);
     b[1] = parseInt("0x09", 16);
@@ -494,3 +517,5 @@ L6470.prototype.test = function() {
     b[1] = parseInt("0x00", 16);
     this.spi.write(b);
 }
+
+module.exports = L6470;

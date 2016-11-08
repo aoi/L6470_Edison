@@ -11,69 +11,81 @@
   "iot-tab": {
     "fileStatus": {
       ".gitignore": {
-        "previousModTime": 1478436978061,
-        "modified": 1478436978061,
+        "previousModTime": 1478564046679,
+        "modified": 1478564046679,
         "seen": true,
         "name": ".gitignore"
       },
       "Gen-LivePainting.xdk": {
-        "previousModTime": 1478436978327,
-        "modified": 1478436978327,
+        "previousModTime": 1478564046684,
+        "modified": 1478564046684,
         "seen": true,
         "name": "Gen-LivePainting.xdk"
       },
       "Gen-LivePainting.xdke": {
-        "previousModTime": 1478549950459,
-        "modified": 1478549950459,
+        "previousModTime": 1478573011253,
+        "modified": 1478573011253,
         "seen": true,
         "name": "Gen-LivePainting.xdke"
       },
       "icon.png": {
-        "previousModTime": 1478436978061,
-        "modified": 1478436978061,
+        "previousModTime": 1478564046736,
+        "modified": 1478564046736,
         "seen": true,
         "name": "icon.png"
       },
       "L6470.js": {
-        "previousModTime": 1478549900188,
-        "modified": 1478549900188,
+        "previousModTime": 1478576489489,
+        "modified": 1478576489489,
         "seen": true,
         "name": "L6470.js"
       },
       "LICENSE.md": {
-        "previousModTime": 1478436978061,
-        "modified": 1478436978061,
+        "previousModTime": 1478564046715,
+        "modified": 1478564046715,
         "seen": true,
         "name": "LICENSE.md"
       },
       "main.js": {
-        "previousModTime": 1478549960451,
-        "modified": 1478549960451,
+        "previousModTime": 1478568722712,
+        "modified": 1478568722712,
         "seen": true,
         "name": "main.js"
       },
       "package.json": {
-        "previousModTime": 1478462242384,
-        "modified": 1478462242384,
+        "previousModTime": 1478564046763,
+        "modified": 1478564046763,
         "seen": true,
         "name": "package.json"
       },
       "README.md": {
-        "previousModTime": 1478436978062,
-        "modified": 1478436978062,
+        "previousModTime": 1478564046722,
+        "modified": 1478564046722,
         "seen": true,
         "name": "README.md"
       },
       "xdk/project-info.json": {
-        "previousModTime": 1478436978235,
-        "modified": 1478436978235,
+        "previousModTime": 1478564046768,
+        "modified": 1478564046768,
         "seen": true,
         "name": "xdk/project-info.json"
+      },
+      "daisy_chain.js": {
+        "previousModTime": 1478564046735,
+        "modified": 1478564046735,
+        "seen": true,
+        "name": "daisy_chain.js"
+      },
+      "main - コピー.js": {
+        "previousModTime": 1478564046747,
+        "modified": 1478564046747,
+        "seen": true,
+        "name": "main - コピー.js"
       }
     },
     "boardFileStatus": {
-      "main.js": {
-        "previousModTime": 1478549962727
+      "L6470.js": {
+        "previousModTime": 1478576491981
       }
     }
   }

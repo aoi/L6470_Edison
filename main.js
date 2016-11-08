@@ -12,10 +12,11 @@ var devices;
 function main() {
     var device1 = new L6470(2, 0);
     if (!device1) { return; }
-    //device1.setup(48, 32, 110, 110, 110);
     var device2 = new L6470(2, 1);
     if (!device2) { return; }
-    //device2.setup(48, 32, 110, 110, 110);
+    
+    device1.setup(48, 110, 110, 110, 110);
+    device2.setup(48, 110, 110, 110, 110);
     devices = [device1, device2];
     
     /*
@@ -44,21 +45,29 @@ Command> COMMAND VAR1 VAR2 ... , COMMAND VAR1 VAR2 ... , ...
 To specify the data for each device in a comma-separated.
 
 [COMMAND]
-    h, help: Show this help.
+    h, help:     Show this help.
     nop:
     get_param:
-    run: 
+    run:
+      arg1: 
+      arg2:
     step_clock:
     move:
     go_to:
+      arg1: absPos
     go_to_dir:
+      arg1: dir
+      arg2: absPos
     go_until:
+      arg1: act
+      arg2: dir
+      arg3: spd
     release_sw:
     go_home:
     go_mark:
     reset_pos:
     reset_device:
-    stop":
+    stop:         Alias soft_stop.
     soft_stop:
     hard_stop:
     soft_hi_z:
@@ -132,9 +141,7 @@ function parseAndSend(line) {
             args = null;
         }
         
-        if (i==0) {
-            devices[i].command(com, args);                        
-        }
+        devices[i].command(com, args);
     }
 }
 
